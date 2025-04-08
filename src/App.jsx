@@ -6,7 +6,7 @@ import ShoppingCart from "./components/ShoppingCart";
 const initialPictures = [
   {
     id: 1,
-    name: "Rose",
+    name: "Sun Flower",
     src: "https://images.unsplash.com/photo-1606041008023-472dfb5e530f",
     price: 0.01,
   },
@@ -18,7 +18,7 @@ const initialPictures = [
   },
   {
     id: 3,
-    name: "Sunflower",
+    name: "Dairy",
     src: "https://images.unsplash.com/photo-1546842931-886c185b4c8c",
     price: 0.02,
   },

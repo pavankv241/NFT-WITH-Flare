@@ -9,12 +9,13 @@ export default function PictureGallery({ pictures, addToCart }) {
         <div className="text-center font-bold">{pic.name}</div> {/* Add this line */}
         <div className="flex justify-between items-center">
           <span className="text-lg font-semibold">Ξ{pic.price}</span>
-          <button
-            className="bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700"
+            <button
+            className="bg-purple-600 text-white px-3 py-1 rounded-lg hover:bg-purple-700"
             onClick={() => addToCart(pic)}
-          >
+              >
             Buy
-          </button>
+            </button>
+
         </div>
       </div>
       ))}

@@ -1,22 +1,30 @@
-import React from "react";
-import { ShoppingCart } from "lucide-react";
-
-export default function Navbar({ onCartClick, cartCount }) {
+export default function Navbar({ onCartClick, cartCount, walletAddress, onWalletToggle }) {
   return (
-    <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center">
-      <h1 className="text-2xl font-bold">🖼️ NFT Market Place</h1>
-      <button
-        onClick={onCartClick}
-        className="relative flex items-center gap-2 text-blue-600 hover:text-blue-800 font-semibold"
-      >
-        <ShoppingCart className="w-6 h-6" />
-        Cart
-        {cartCount > 0 && (
-          <span className="absolute -top-1 -right-3 bg-red-500 text-white text-xs rounded-full px-1.5">
-            {cartCount}
-          </span>
-        )}
-      </button>
+    <nav className="bg-gray-900 text-white px-4 py-3 flex justify-between items-center">
+      <h1 className="text-2xl font-bold"> NFT Flower Market</h1>
+
+      <div className="flex gap-4 items-center">
+        <button
+          onClick={onCartClick}
+          className="relative bg-purple-600 px-3 py-1 rounded hover:bg-purple-700"
+        >
+          Cart
+          {cartCount > 0 && (
+            <span className="absolute -top-2 -right-2 bg-red-500 rounded-full px-1 text-xs">
+              {cartCount}
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={onWalletToggle}
+          className="bg-blue-600 hover:bg-blue-700 px-4 py-1 rounded"
+        >
+          {walletAddress
+            ? `Connected: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
+            : "Connect Wallet"}
+        </button>
+      </div>
     </nav>
   );
 }

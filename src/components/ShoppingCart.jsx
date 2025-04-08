@@ -1,43 +1,49 @@
 import React from "react";
 
-export default function ShoppingCart({ cart, handlePay, showCart, onClose }) {
-  const totalPrice = cart.reduce((sum, pic) => sum + pic.price, 0);
+export default function ShoppingCart({ cart, handlePay, showCart, onClose, removeFromCart }) {
+  if (!showCart) return null;
+
+  const total = cart.reduce((acc, item) => acc + item.price, 0);
 
   return (
-    <div
-      className={`fixed top-0 right-0 w-80 h-full bg-white shadow-2xl z-50 p-4 transition-transform duration-300 ${
-        showCart ? "translate-x-0" : "translate-x-full"
-      }`}
-    >
-      <div className="flex justify-between items-center border-b pb-2 mb-4">
-        <h2 className="text-xl font-bold">🛒 Shopping Cart</h2>
-        <button onClick={onClose} className="text-red-600 font-bold text-lg">
-          ✕
-        </button>
-      </div>
+    <div className="fixed top-0 right-0 w-full max-w-md h-full bg-white shadow-lg z-50 p-6 overflow-y-auto">
+      <button className="mb-4 text-gray-500 hover:text-gray-800" onClick={onClose}>
+        Close
+      </button>
+      <h2 className="text-2xl font-semibold mb-4">Shopping Cart</h2>
+
       {cart.length === 0 ? (
-        <p className="text-gray-500">No items added.</p>
+        <p>Your cart is empty.</p>
       ) : (
         <>
-          <ul className="space-y-2">
+          <ul>
             {cart.map((item) => (
-              <li key={item.id} className="flex items-center justify-between gap-2">
+              <li
+                key={item.id}
+                className="flex items-center justify-between mb-4 border-b pb-2"
+              >
                 <img
                   src={item.src}
-                  alt={`Pic ${item.id}`}
-                  className="w-12 h-12 object-cover rounded-md"
+                  alt={item.name}
+                  className="w-16 h-16 object-cover rounded mr-4"
                 />
-                <span className="flex-1 ml-2">NFT {item.id}</span>
-                <span className="font-medium">ETH {item.price}</span>
-
+                <div className="flex-1">
+                  <p className="font-medium">{item.name}</p>
+                  <p className="text-sm text-gray-600">{item.price} ETH</p>
+                </div>
+                <button
+                  onClick={() => removeFromCart(item.id)}
+                  className="text-red-500 hover:text-red-700 text-sm ml-2"
+                >
+                  Remove
+                </button>
               </li>
             ))}
-
           </ul>
-          <div className="mt-3 font-semibold">Total: ETH {totalPrice}</div>
+          <p className="mt-4 font-bold">Total: {total} ETH</p>
           <button
-            className="mt-4 w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700"
             onClick={handlePay}
+            className="mt-4 w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
           >
             Pay
           </button>

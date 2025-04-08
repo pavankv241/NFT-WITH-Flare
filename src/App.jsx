@@ -31,11 +31,13 @@ const initialPictures = [
   },
 ];
 
-
 export default function App() {
   const [availablePics, setAvailablePics] = useState(initialPictures);
   const [cart, setCart] = useState([]);
   const [showCart, setShowCart] = useState(false);
+  const [walletAddress, setWalletAddress] = useState(null);
+
+  const YOUR_RECEIVER_WALLET = "0x3a86861b069F168577679a31265a2c8fD267340A";
 
   const addToCart = (pic) => {
     if (!cart.find((item) => item.id === pic.id)) {
@@ -43,47 +45,68 @@ export default function App() {
     }
   };
 
-  const YOUR_RECEIVER_WALLET = "0x3a86861b069F168577679a31265a2c8fD267340A";
+  const removeFromCart = (picId) => {
+    setCart(cart.filter((item) => item.id !== picId));
+  };
 
-  // This handles the payment
+  const handleWalletToggle = async () => {
+    if (walletAddress) {
+      setWalletAddress(null); // Disconnect
+    } else {
+      if (window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({
+            method: "eth_requestAccounts",
+          });
+          setWalletAddress(accounts[0]);
+        } catch (err) {
+          console.log(err)
+          alert("🛑 Wallet connection failed.");
+        }
+      } else {
+        alert("🦊 Please install MetaMask to connect your wallet.");
+      }
+    }
+  };
+
   const handlePay = async () => {
-    if (!window.ethereum) {
-      alert("🦊 Please install MetaMask to make a payment!");
+    if (!walletAddress) {
+      alert("Please connect your wallet first.");
       return;
     }
-  
-    try {
-      // Request access to wallet
-      await window.ethereum.request({ method: "eth_requestAccounts" });
 
+    const totalAmount = cart.reduce((acc, item) => acc + item.price, 0);
+
+    try {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
 
-      // Calculate total ETH to send
-      const totalEth = cart.reduce((sum, item) => sum + item.price, 0);
-
       const tx = await signer.sendTransaction({
         to: YOUR_RECEIVER_WALLET,
-        value: ethers.parseEther(totalEth.toString()),
+        value: ethers.parseEther(totalAmount.toString()),
       });
-  
+
       await tx.wait();
-  
-      // Clear cart and confirm payment
+
       const purchasedIds = cart.map((item) => item.id);
       setAvailablePics(availablePics.filter((img) => !purchasedIds.includes(img.id)));
       setCart([]);
       setShowCart(false);
       alert("✅ NFTs Purchased Successfully!");
-    } catch (err) {
-      console.error(err);
-      alert("❌ Payment failed or rejected!");
+    } catch (error) {
+      console.error(error);
+      alert("❌ Transaction Failed");
     }
   };
 
   return (
     <div className="relative">
-      <Navbar onCartClick={() => setShowCart(true)} cartCount={cart.length} />
+      <Navbar
+        onCartClick={() => setShowCart(true)}
+        cartCount={cart.length}
+        walletAddress={walletAddress}
+        onWalletToggle={handleWalletToggle}
+      />
 
       <div className="p-6">
         <PictureGallery pictures={availablePics} addToCart={addToCart} />
@@ -94,6 +117,7 @@ export default function App() {
         handlePay={handlePay}
         showCart={showCart}
         onClose={() => setShowCart(false)}
+        removeFromCart={removeFromCart}
       />
     </div>
   );

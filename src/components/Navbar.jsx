@@ -1,9 +1,13 @@
-export default function Navbar({ onCartClick, cartCount, walletAddress, onWalletToggle }) {
+export default function Navbar({ onCartClick, cartCount, walletAddress, onWalletToggle , onMintClick }) {
   return (
     <nav className="bg-gray-900 text-white px-4 py-3 flex justify-between items-center">
       <h1 className="text-2xl font-bold"> NFT Flower Market</h1>
 
       <div className="flex gap-4 items-center">
+
+        <button className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded"
+        onClick={onMintClick}
+        >Mint NFT</button>
         <button
           onClick={onCartClick}
           className="relative bg-purple-600 px-3 py-1 rounded hover:bg-purple-700"

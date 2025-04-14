@@ -1,48 +1,40 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { ethers } from "ethers";
 import Navbar from "./components/Navbar";
 import PictureGallery from "./components/PictureGallery";
 import ShoppingCart from "./components/ShoppingCart";
-import { ethers } from "ethers";
+import { TrendingUp } from "lucide-react";
+import MintNFTPage from "./components/MintNFTPage";
+import { Toaster , toast} from "react-hot-toast";
 
-const initialPictures = [
-  {
-    id: 1,
-    name: "Sun Flower",
-    src: "https://images.unsplash.com/photo-1606041008023-472dfb5e530f",
-    price: 0.000001,
-  },
-  {
-    id: 2,
-    name: "Tulip",
-    src: "https://images.unsplash.com/photo-1538998073820-4dfa76300194",
-    price: 0.000001,
-  },
-  {
-    id: 3,
-    name: "Dairy",
-    src: "https://images.unsplash.com/photo-1546842931-886c185b4c8c",
-    price: 0.000001,
-  },
-  {
-    id: 4,
-    name: "Lily",
-    src: "https://plus.unsplash.com/premium_photo-1676068243733-df1880c2aef8",
-    price: 0.000001,
-  },
-];
 
 export default function App() {
-  const [availablePics, setAvailablePics] = useState(initialPictures);
+  const [availablePics, setAvailablePics] = useState([]);
   const [cart, setCart] = useState([]);
   const [showCart, setShowCart] = useState(false);
   const [walletAddress, setWalletAddress] = useState(null);
+  const [showMintPage, setShowMintPage] = useState(false);
 
-  const YOUR_RECEIVER_WALLET = "0x3a86861b069F168577679a31265a2c8fD267340A";
+  const YOUR_RECEIVER_WALLET = import.meta.env.VITE_RECEIVER_WALLET;
+
+  // Load minted NFTs from localStorage when the component mounts
+  useEffect(() => {
+    const storedPics = JSON.parse(localStorage.getItem("mintedPics"));
+    if (storedPics) {
+      setAvailablePics(storedPics);
+    }
+  }, []);
 
   const addToCart = (pic) => {
     if (!cart.find((item) => item.id === pic.id)) {
       setCart([...cart, pic]);
     }
+  };
+
+  const handleAddMintedPic = (newPic) => {
+    const updatedPics = [...availablePics, newPic];
+    setAvailablePics(updatedPics);
+    localStorage.setItem("mintedPics", JSON.stringify(updatedPics));  // Save to localStorage
   };
 
   const removeFromCart = (picId) => {
@@ -51,7 +43,7 @@ export default function App() {
 
   const handleWalletToggle = async () => {
     if (walletAddress) {
-      setWalletAddress(null); // Disconnect
+      setWalletAddress(null);  // Disconnect
     } else {
       if (window.ethereum) {
         try {
@@ -60,23 +52,19 @@ export default function App() {
           });
           setWalletAddress(accounts[0]);
         } catch (err) {
-          console.log(err)
-          alert("🛑 Wallet connection failed.");
+          console.log(err);
+          toast.success(" Wallet connection failed.");
         }
       } else {
-        alert("🦊 Please install MetaMask to connect your wallet.");
+        toast.success(" Please install MetaMask.");
       }
     }
   };
 
   const handlePay = async () => {
-    if (!walletAddress) {
-      alert("Please connect your wallet first.");
-      return;
-    }
+    if (!walletAddress) return toast.success("Connect your wallet first.");
 
     const totalAmount = cart.reduce((acc, item) => acc + item.price, 0);
-
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
@@ -92,24 +80,36 @@ export default function App() {
       setAvailablePics(availablePics.filter((img) => !purchasedIds.includes(img.id)));
       setCart([]);
       setShowCart(false);
-      alert("✅ NFTs Purchased Successfully!");
-    } catch (error) {
-      console.error(error);
-      alert("❌ Transaction Failed");
+      toast.success(" NFTs Purchased Successfully!");
+    } catch (err) {
+      console.error(err);
+      toast.error("❌ Transaction Failed");
     }
   };
 
   return (
     <div className="relative">
+      <Toaster position="top-right" />
       <Navbar
         onCartClick={() => setShowCart(true)}
         cartCount={cart.length}
         walletAddress={walletAddress}
         onWalletToggle={handleWalletToggle}
+        onMintClick={() => setShowMintPage(true)}
       />
-
+      
       <div className="p-6">
-        <PictureGallery pictures={availablePics} addToCart={addToCart} />
+        {showMintPage ? (
+          <MintNFTPage
+            walletAddress={walletAddress}
+            onBack={() => setShowMintPage(false)}
+            onAddMintedPic={handleAddMintedPic}
+          />
+        ) : (
+          <>
+            <PictureGallery pictures={availablePics} addToCart={addToCart} />
+          </>
+        )}
       </div>
 
       <ShoppingCart

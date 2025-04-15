@@ -77,9 +77,24 @@ export default function App() {
       await tx.wait();
 
       const purchasedIds = cart.map((item) => item.id);
-      setAvailablePics(availablePics.filter((img) => !purchasedIds.includes(img.id)));
+
+      // Removing after Bought
+      const updatedAvailablePics = availablePics.filter((img) =>{ return !purchasedIds.includes(img.id)} )
+
+      console.log(updatedAvailablePics)
+
+      setAvailablePics(updatedAvailablePics);
+
       setCart([]);
+
       setShowCart(false);
+
+      localStorage.setItem("mintedPics" , JSON.stringify(updatedAvailablePics));
+
+      console.log("Purchased IDs:", purchasedIds);
+      console.log("Available Pics:", availablePics.map((img) => img.id));
+
+
       toast.success(" NFTs Purchased Successfully!");
     } catch (err) {
       console.error(err);
@@ -97,7 +112,7 @@ export default function App() {
         onWalletToggle={handleWalletToggle}
         onMintClick={() => setShowMintPage(true)}
       />
-      
+
       <div className="p-6">
         {showMintPage ? (
           <MintNFTPage

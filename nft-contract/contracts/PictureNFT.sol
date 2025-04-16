@@ -11,7 +11,7 @@ contract PictureNFT is ERC721URIStorage, Ownable {
         tokenCounter = 0;
     }
 
-    function mintNFT(address to, string memory tokenURI) public onlyOwner returns (uint256) {
+    function mintNFT(address to, string memory tokenURI) public returns (uint256) {
         uint256 tokenId = tokenCounter;
         _safeMint(to, tokenId);
         _setTokenURI(tokenId, tokenURI);

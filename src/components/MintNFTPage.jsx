@@ -54,11 +54,14 @@ export default function MintNFTPage({ walletAddress, onBack, onAddMintedPic }) {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
 
-      /*const contract = new ethers.Contract(config.CONTRACT_ADDRESS,config.ABI, signer);
+      const contract = new ethers.Contract(config.CONTRACT_ADDRESS,config.ABI, signer);
 
       const tx1 = await contract.mintNFT(walletAddress , ipfsUrl , {gasLimit:500000});
+      console.log("Contract error" , tx1);
 
-      await tx1.wait();*/
+       const receipt =  await tx1.wait();
+
+      console.log(receipt); 
 
       const tx = await signer.sendTransaction({
         to: import.meta.env.VITE_RECEIVER_WALLET,

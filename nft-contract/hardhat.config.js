@@ -7,10 +7,10 @@ require("@nomicfoundation/hardhat-verify");
 module.exports = {
   solidity: "0.8.28",
   networks: {
-    bnbTestnet: {
-      url: 'https://data-seed-prebsc-1-s1.binance.org:8545/',
+    sepolia: {
+      url: 'https://eth-sepolia.g.alchemy.com/v2/EH0YqqZKDFerFHCBkSo4a15uusnCGdpx',
       accounts: ["be9ee3b499bf3a95d1608953c001d4e2b7e5f9f51317ec059045b733c9f24e40"],
-      chainId: 97
+      chainId: 11155111
     }
   }
 };

@@ -53,7 +53,7 @@ export default function MintNFTPage({ walletAddress, onBack, onAddMintedPic }) {
       console.log("Uploaded IPFS URL:", ipfsUrl); // Log the URL
   
       // 2. Connect to smart contract & Send minting fee
-      if (network === "bnbTestnet") {
+      /*if (network === "bnbTestnet") {
         try {
           await window.ethereum.request({
             method: "wallet_switchEthereumChain",
@@ -79,7 +79,7 @@ export default function MintNFTPage({ walletAddress, onBack, onAddMintedPic }) {
             throw switchError;
           }
         }
-      } else if (network === "sepolia") {
+      } else if (network === "sepolia") {*/
         try {
           await window.ethereum.request({
             method: "wallet_switchEthereumChain",
@@ -105,8 +105,7 @@ export default function MintNFTPage({ walletAddress, onBack, onAddMintedPic }) {
             throw switchError;
           }
         }
-      }
-  
+
       // Use JsonRpcProvider instead of Web3Provider
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
@@ -195,7 +194,7 @@ export default function MintNFTPage({ walletAddress, onBack, onAddMintedPic }) {
         onChange={(e) => setNetwork(e.target.value)}
       >
         <option value="sepolia">Ethereum Sepolia</option>
-        <option value="bnbTestnet">BNB Testnet</option>
+        {/*<option value="bnbTestnet">BNB Testnet</option>*/}
       </select>
 
     {/* Button Row */}

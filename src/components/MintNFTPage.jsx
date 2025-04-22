@@ -133,6 +133,7 @@ export default function MintNFTPage({ walletAddress, onBack, onAddMintedPic }) {
         description,
         src: ipfsUrl,
         price: parseFloat(price),
+        creator: walletAddress
       };
   
       onAddMintedPic(nftDetails);

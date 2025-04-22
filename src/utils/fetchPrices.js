@@ -1,4 +1,4 @@
-import { Web3 } from "web3";
+/*import { Web3 } from "web3";
 
 const RPC_URL = "https://coston2-api.flare.network/ext/C/rpc";
 const CONTRACT_ADDRESS = "0x5fe17ae60359e1804d735E7f28C9C4f2B59773f7";
@@ -163,12 +163,29 @@ const ABI = [
 
 export async function fetchTrxPriceFromOracle() {
     const web3 = new Web3(RPC_URL);
+    const base_url = "https://coston2-explorer.flare.network/api";
+    // Fetch ABI
+    const params = `?module=contract&action=getabi&address=${CONTRACT_ADDRESS}`;
+    console.log("Error 1")
+    const response = await fetch(base_url + params);
+    console.log("Error 2")
+    const abi = JSON.parse((await response.json())["result"]);
+    console.log("This is ABI", abi);
+    console.log("Error 3")
+    const registry = new web3.eth.Contract(abi , CONTRACT_ADDRESS);
+    console.log("Error 4")
+    const res = await registry.methods.getTrxUsdPrice().call();
+    console.log("result", res);
+
+
+
+
     const contract = new web3.eth.Contract(ABI, CONTRACT_ADDRESS);
     console.log("contract here" , contract);
     try {
-       console.log("Error 1")
+       
       const tx = await contract.methods.getTrxUsdPrice().call();
-      console.log("Error 2")
+      
       const { price, decimals } = await contract.methods.getStoredTrxPrice().call();
       console.log("error 3");
       const trxUsd = Number(price) / 10 ** Number(decimals);
@@ -187,4 +204,4 @@ export const fetchEthPriceFromCoingecko = async () => {
     );
     const data = await res.json();
     return data.ethereum.usd;
-  };
+  };*/

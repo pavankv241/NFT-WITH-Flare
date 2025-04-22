@@ -69,12 +69,27 @@ export default function App() {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
 
-      const tx = await signer.sendTransaction({
+      for(const item of cart){
+
+        if(!item.creator){
+          console.warn(`Creator address missing for item ${item.name}`);
+        }
+
+        const tx = await signer.sendTransaction({
+          to: item.creator,
+          value:ethers.parseEther(totalAmount.toString())
+        })
+
+        await tx.wait();
+        console.log(`payment sent to ${item.creator} for ${item.name}`);
+      }
+
+      /*const tx = await signer.sendTransaction({
         to: YOUR_RECEIVER_WALLET,
         value: ethers.parseEther(totalAmount.toString()),
       });
 
-      await tx.wait();
+      await tx.wait();*/
 
       const purchasedIds = cart.map((item) => item.id);
 

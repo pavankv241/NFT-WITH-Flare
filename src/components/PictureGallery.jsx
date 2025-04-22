@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { fetchEthPriceFromCoingecko, fetchTrxPriceFromOracle } from "../utils/fetchPrices";
+//import { fetchEthPriceFromCoingecko, fetchTrxPriceFromOracle } from "../utils/fetchPrices";
 
 export default function PictureGallery({ pictures, addToCart }) {
-  const [ethPrice, setEthPrice] = useState(null);
+  /*const [ethPrice, setEthPrice] = useState(null);
   const [trxPrice, setTrxPrice] = useState(null);
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export default function PictureGallery({ pictures, addToCart }) {
     const usd = ethAmount * ethPrice;
     const trxValue = usd / trxPrice;
     return trxValue.toFixed(2); // show 2 decimals
-  };
+  };*/
 
   if (pictures.length === 0) {
     return (
@@ -48,7 +48,7 @@ export default function PictureGallery({ pictures, addToCart }) {
           <div className="flex flex-col items-center space-y-1">
             <span className="text-lg font-semibold">Ξ {pic.price}</span>
             <span className="text-sm text-gray-500">
-              ≈ {convertEthToTrx(pic.price)} TRX
+              ≈ {/*{convertEthToTrx(pic.price)}*/} TRX
             </span>
           </div>
           <div className="flex justify-center pt-2">

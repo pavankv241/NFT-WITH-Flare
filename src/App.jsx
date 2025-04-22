@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { ethers } from "ethers";
+//import { ethers } from "ethers";
 import Navbar from "./components/Navbar";
 import PictureGallery from "./components/PictureGallery";
 import ShoppingCart from "./components/ShoppingCart";
 import { TrendingUp } from "lucide-react";
 import MintNFTPage from "./components/MintNFTPage";
 import { Toaster , toast} from "react-hot-toast";
-
+import TronWeb from "tronweb";
+//import {fetchPrices} from "./utils/fetchPrices";
 
 export default function App() {
   const [availablePics, setAvailablePics] = useState([]);
@@ -16,6 +17,7 @@ export default function App() {
   const [showMintPage, setShowMintPage] = useState(false);
 
   const YOUR_RECEIVER_WALLET = import.meta.env.VITE_RECEIVER_WALLET;
+  const TRON_RECEIVER = import.meta.env.VITE_TRON_ADDRESS
 
   // Load minted NFTs from localStorage when the component mounts
   useEffect(() => {
@@ -51,74 +53,84 @@ export default function App() {
 
   const handleWalletToggle = async () => {
     if (walletAddress) {
-      setWalletAddress(null);  // Disconnect
+      setWalletAddress(null); // Disconnect
+      toast.success("🔌 Wallet Disconnected");
     } else {
-      if (window.ethereum) {
+      if (window.tronWeb && window.tronLink) {
         try {
-          const accounts = await window.ethereum.request({
-            method: "eth_requestAccounts",
-          });
-          setWalletAddress(accounts[0]);
+          // Request account access
+          await window.tronLink.request({ method: "tron_requestAccounts" });
+  
+          // Wait until tronWeb is ready
+          const waitForReady = async () => {
+            return new Promise((resolve) => {
+              const check = () => {
+                if (window.tronWeb.ready && window.tronWeb.defaultAddress.base58) {
+                  resolve(window.tronWeb.defaultAddress.base58);
+                } else {
+                  setTimeout(check, 200); // Retry after 200ms
+                }
+              };
+              check();
+            });
+          };
+  
+          const address = await waitForReady();
+          console.log("address",address);
+          setWalletAddress(address);
+          toast.success(`Connected to TronLink: ${address.slice(0, 6)}...`);
         } catch (err) {
-          console.log(err);
-          toast.success(" Wallet connection failed.");
+          console.error(err);
+          toast.error("❌ TronLink connection failed");
         }
       } else {
-        toast.success(" Please install MetaMask.");
+        toast.error("❌ Please install the TronLink extension");
       }
     }
   };
+  
+
 
   const handlePay = async () => {
     if (!walletAddress) return toast.success("Connect your wallet first.");
-
+  
     const totalAmount = cart.reduce((acc, item) => acc + item.price, 0);
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-
-      for(const item of cart){
-
-        if(!item.creator){
-          console.warn(`Creator address missing for item ${item.name}`);
-        }
-
-        const tx = await signer.sendTransaction({
-          to: item.creator,
-          value:ethers.parseEther(totalAmount.toString())
-        })
-
-        await tx.wait();
-        console.log(`payment sent to ${item.creator} for ${item.name}`);
-      }
-
-      /*const tx = await signer.sendTransaction({
-        to: YOUR_RECEIVER_WALLET,
-        value: ethers.parseEther(totalAmount.toString()),
-      });
-
-      await tx.wait();*/
-
+      // Wait for TronWeb to be ready
+      const waitForReady = async () => {
+        return new Promise((resolve, reject) => {
+          const check = () => {
+            if (window.tronWeb && window.tronWeb.ready && window.tronWeb.defaultAddress.base58) {
+              resolve();  // If TronLink is ready, resolve the promise
+            } else {
+              setTimeout(check, 200);  // Otherwise, check every 200ms
+            }
+          };
+          check();  // Start checking for readiness
+        });
+      };
+  
+      await waitForReady();
+  
+      // Send payment to the defined TRON_RECEIVER
+      const amountInSun = window.tronWeb.toSun(totalAmount);  // Convert total amount to SUN (smallest TRX unit)
+      console.log("Amount In Sun", amountInSun);
+  
+      const tx = await window.tronWeb.trx.sendTransaction(TRON_RECEIVER, amountInSun);
+      console.log(`Payment sent to ${TRON_RECEIVER}`, tx);
+  
+      // Handle post-payment steps
       const purchasedIds = cart.map((item) => item.id);
-
-      // Removing after Bought
-      const updatedAvailablePics = availablePics.filter((img) =>{ return !purchasedIds.includes(img.id)} )
-
-      console.log(updatedAvailablePics)
-
+      const updatedAvailablePics = availablePics.filter((img) => !purchasedIds.includes(img.id));
+  
       setAvailablePics(updatedAvailablePics);
-
       setCart([]);
-
       setShowCart(false);
-
-      localStorage.setItem("mintedPics" , JSON.stringify(updatedAvailablePics));
-
-      console.log("Purchased IDs:", purchasedIds);
-      console.log("Available Pics:", availablePics.map((img) => img.id));
-
-
-      toast.success(" NFTs Purchased Successfully!");
+  
+      // Save the updated available pics to local storage
+      localStorage.setItem("mintedPics", JSON.stringify(updatedAvailablePics));
+  
+      toast.success("✅ NFTs Purchased Successfully with TRX");
     } catch (err) {
       console.error(err);
       toast.error("❌ Transaction Failed");

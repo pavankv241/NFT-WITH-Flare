@@ -1,31 +1,40 @@
 import React, { useEffect, useState } from "react";
-//import { fetchEthPriceFromCoingecko, fetchTrxPriceFromOracle } from "../utils/fetchPrices";
+import { priceService } from "../utils/fetchPrices";
 
 export default function PictureGallery({ pictures, addToCart }) {
-  /*const [ethPrice, setEthPrice] = useState(null);
+
   const [trxPrice, setTrxPrice] = useState(null);
 
   useEffect(() => {
-    const loadPrices = async () => {
-      try {
-        const eth = await fetchEthPriceFromCoingecko();
-        const trx = await fetchTrxPriceFromOracle();
-        setEthPrice(eth);
-        setTrxPrice(trx);
-      } catch (err) {
-        console.error("Error fetching prices:", err);
-      }
-    };
 
-    loadPrices();
+    const getPrice = async () => {
+
+      try {
+        const [trx] = await priceService.getTokenPrice(['TRX']);
+        setTrxPrice(trx.price);
+      }catch(err){
+        console.log("Failed to Fetch TRX price:", err)
+      }
+    }
+
+    getPrice();
+
+
   }, []);
 
-  const convertEthToTrx = (ethAmount) => {
-    if (!ethPrice || !trxPrice) return "...";
-    const usd = ethAmount * ethPrice;
-    const trxValue = usd / trxPrice;
-    return trxValue.toFixed(2); // show 2 decimals
-  };*/
+  const convertETHToTrx = (ethAmount) => {
+
+    const ETH_PRICE = 3200;
+
+    if(!trxPrice) return "...";
+
+    const ethUsd = ethAmount * ETH_PRICE;
+
+    const trxEquivalent = ethUsd / trxPrice;
+
+    return trxEquivalent.toFixed(2);
+  }
+
 
   if (pictures.length === 0) {
     return (
@@ -48,7 +57,7 @@ export default function PictureGallery({ pictures, addToCart }) {
           <div className="flex flex-col items-center space-y-1">
             <span className="text-lg font-semibold">Ξ {pic.price}</span>
             <span className="text-sm text-gray-500">
-              ≈ {/*{convertEthToTrx(pic.price)}*/} TRX
+              ≈ {convertETHToTrx(pic.price)} TRX
             </span>
           </div>
           <div className="flex justify-center pt-2">

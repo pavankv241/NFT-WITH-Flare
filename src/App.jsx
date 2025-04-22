@@ -21,7 +21,15 @@ export default function App() {
   useEffect(() => {
     const storedPics = JSON.parse(localStorage.getItem("mintedPics"));
     if (storedPics) {
-      setAvailablePics(storedPics);
+
+    const uniquePics = storedPics.filter((pic , index ,self) => 
+      index === self.findIndex((p) => p.src === pic.src)
+    );
+
+    const filtered = uniquePics.filter(pic => pic.price <= 100);
+
+      localStorage.setItem("mintedPics" , JSON.stringify(filtered));
+      setAvailablePics(filtered);
     }
   }, []);
 

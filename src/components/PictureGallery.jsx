@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { priceService } from "../utils/fetchPrices";
+//import React, { useEffect, useState } from "react";
+//import { priceService } from "../utils/fetchPrices";
 
 export default function PictureGallery({ pictures, addToCart }) {
 
-  const [trxPrice, setTrxPrice] = useState(null);
+  /*const [trxPrice, setTrxPrice] = useState(null);
 
   useEffect(() => {
 
@@ -34,6 +34,7 @@ export default function PictureGallery({ pictures, addToCart }) {
 
     return trxEquivalent.toFixed(2);
   }
+    */
 
 
   if (pictures.length === 0) {
@@ -57,7 +58,7 @@ export default function PictureGallery({ pictures, addToCart }) {
           <div className="flex flex-col items-center space-y-1">
             <span className="text-lg font-semibold">Ξ {pic.price}</span>
             <span className="text-sm text-gray-500">
-              ≈ {convertETHToTrx(pic.price)} TRX
+              ≈ {/*{convertETHToTrx(pic.price)}*/} TRX
             </span>
           </div>
           <div className="flex justify-center pt-2">

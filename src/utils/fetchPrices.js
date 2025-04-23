@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+/*import { ethers } from 'ethers';
 
 const FTSO_REGISTRY_ADDRESS = '0x4C54FA38F0a792A0C8E457C7BB95C10E9F52A497'; // Coston2 testnet
 const RPC_URL = 'https://coston2-api.flare.network/ext/C/rpc';
@@ -34,3 +34,4 @@ class fetchPrices {
 }
 
 export const priceService = new fetchPrices();
+*/

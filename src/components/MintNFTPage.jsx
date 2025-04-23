@@ -106,7 +106,7 @@ export default function MintNFTPage({ walletAddress, onBack, onAddMintedPic }) {
           }
         }
 
-      // Use JsonRpcProvider instead of Web3Provider
+      // Use BrowserProvider instead of Web3Provider
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
   

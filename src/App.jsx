@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-//import { ethers } from "ethers";
+import { ethers } from "ethers";
 import Navbar from "./components/Navbar";
 import PictureGallery from "./components/PictureGallery";
 import ShoppingCart from "./components/ShoppingCart";
@@ -8,6 +8,8 @@ import MintNFTPage from "./components/MintNFTPage";
 import { Toaster , toast} from "react-hot-toast";
 import TronWeb from "tronweb";
 //import {fetchPrices} from "./utils/fetchPrices";
+import xrpl from "xrpl";
+
 
 export default function App() {
   const [availablePics, setAvailablePics] = useState([]);
@@ -51,91 +53,141 @@ export default function App() {
     setCart(cart.filter((item) => item.id !== picId));
   };
 
-  const handleWalletToggle = async () => {
-    if (walletAddress) {
-      setWalletAddress(null); // Disconnect
-      toast.success("🔌 Wallet Disconnected");
-    } else {
-      if (window.tronWeb && window.tronLink) {
-        try {
-          // Request account access
-          await window.tronLink.request({ method: "tron_requestAccounts" });
-  
-          // Wait until tronWeb is ready
-          const waitForReady = async () => {
-            return new Promise((resolve) => {
-              const check = () => {
-                if (window.tronWeb.ready && window.tronWeb.defaultAddress.base58) {
-                  resolve(window.tronWeb.defaultAddress.base58);
-                } else {
-                  setTimeout(check, 200); // Retry after 200ms
-                }
-              };
-              check();
-            });
-          };
-  
-          const address = await waitForReady();
-          console.log("address",address);
-          setWalletAddress(address);
-          toast.success(`Connected to TronLink: ${address.slice(0, 6)}...`);
-        } catch (err) {
-          console.error(err);
-          toast.error("❌ TronLink connection failed");
-        }
-      } else {
-        toast.error("❌ Please install the TronLink extension");
-      }
-    }
-  };
-  
 
+  const POLYGON_AMOY_CHAIN_ID = "0x13882"; // 80002 in hex
+  const handleWalletToggle = async () => {
+      if (walletAddress) {
+        setWalletAddress(null);
+        toast.success("🔌 Wallet Disconnected");
+        return;
+      }
+    
+      if (!window.ethereum) {
+        toast.error(" MetaMask is not available.");
+        return;
+      }
+    
+      try {
+        //  switching to Amoy
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: POLYGON_AMOY_CHAIN_ID }],
+        });
+      } catch (switchError) {
+        // If not added, try to add Amoy
+        if (switchError.code === 4902) {
+          try {
+            await window.ethereum.request({
+              method: "wallet_addEthereumChain",
+              params: [{
+                chainId: POLYGON_AMOY_CHAIN_ID,
+                chainName: "Polygon Amoy Testnet",
+                rpcUrls: ["https://rpc-amoy.polygon.technology"],
+                nativeCurrency: {
+                  name: "MATIC",
+                  symbol: "MATIC",
+                  decimals: 18,
+                },
+                blockExplorerUrls: ["https://www.oklink.com/amoy"],
+              }],
+            });
+          } catch (addError) {
+            console.error(" Failed to add Polygon Amoy:", addError);
+            toast.error(" Failed to add Polygon Amoy network.");
+            return;
+          }
+        } else {
+          console.error(" Failed to switch to Amoy:", switchError);
+          toast.error(" Failed to switch network.");
+          return;
+        }
+      }
+    
+      // Connect wallet
+      try {
+        const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+        const address = accounts[0];
+        setWalletAddress(address);
+        toast.success(` Connected: ${address.slice(0, 6)}...${address.slice(-4)}`);
+      } catch (err) {
+        console.error(" Wallet connection failed:", err);
+        toast.error(" Wallet connection failed.");
+      }
+    };
 
   const handlePay = async () => {
-    if (!walletAddress) return toast.success("Connect your wallet first.");
-  
-    const totalAmount = cart.reduce((acc, item) => acc + item.price, 0);
-    try {
-      // Wait for TronWeb to be ready
-      const waitForReady = async () => {
-        return new Promise((resolve, reject) => {
-          const check = () => {
-            if (window.tronWeb && window.tronWeb.ready && window.tronWeb.defaultAddress.base58) {
-              resolve();  // If TronLink is ready, resolve the promise
+      if (!walletAddress) return toast.error("Connect your wallet first.");
+      const totalAmount = cart.reduce((acc, item) => acc + item.price, 0); // Total cart amount
+
+      try {
+        const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+
+        // Ensure Polygon Amoy network
+        if (currentChainId !== POLYGON_AMOY_CHAIN_ID) {
+          try {
+            await window.ethereum.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: POLYGON_AMOY_CHAIN_ID }],
+            });
+          } catch (switchError) {
+            if (switchError.code === 4902) {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: POLYGON_AMOY_CHAIN_ID,
+                  chainName: 'Polygon Amoy Testnet',
+                  rpcUrls: ['https://rpc-amoy.polygon.technology'],
+                  nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
+                  blockExplorerUrls: ['https://www.oklink.com/amoy'],
+                }],
+              });
             } else {
-              setTimeout(check, 200);  // Otherwise, check every 200ms
+              console.error("Network switch failed", switchError);
+              toast.error("Failed to switch to Polygon Amoy.");
+              return;
             }
-          };
-          check();  // Start checking for readiness
-        });
-      };
-  
-      await waitForReady();
-  
-      // Send payment to the defined TRON_RECEIVER
-      const amountInSun = window.tronWeb.toSun(totalAmount);  // Convert total amount to SUN (smallest TRX unit)
-      console.log("Amount In Sun", amountInSun);
-  
-      const tx = await window.tronWeb.trx.sendTransaction(TRON_RECEIVER, amountInSun);
-      console.log(`Payment sent to ${TRON_RECEIVER}`, tx);
-  
-      // Handle post-payment steps
-      const purchasedIds = cart.map((item) => item.id);
-      const updatedAvailablePics = availablePics.filter((img) => !purchasedIds.includes(img.id));
-  
-      setAvailablePics(updatedAvailablePics);
-      setCart([]);
-      setShowCart(false);
-  
-      // Save the updated available pics to local storage
-      localStorage.setItem("mintedPics", JSON.stringify(updatedAvailablePics));
-  
-      toast.success("✅ NFTs Purchased Successfully with TRX");
-    } catch (err) {
-      console.error(err);
-      toast.error("❌ Transaction Failed");
-    }
-  };
+          }
+        }
+
+        // Ethers.js signer
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+
+        // Send payments to individual NFT creators
+        for (const item of cart) {
+          if (!item.creator) {
+            console.warn(` Creator address missing for item: ${item.name}`);
+            continue;
+          }
+
+          const valueInWei = ethers.parseEther(totalAmount.toString());
+
+          const tx = await signer.sendTransaction({
+            to: item.creator,
+            value: valueInWei,
+          });
+
+          await tx.wait();
+          console.log(` Payment sent to ${item.creator} for ${item.name}`);
+        }
+
+        //Post-payment cleanup
+        const purchasedIds = cart.map((item) => item.id);
+        const updatedAvailablePics = availablePics.filter((img) => !purchasedIds.includes(img.id));
+
+        setAvailablePics(updatedAvailablePics);
+        setCart([]);
+        setShowCart(false);
+        localStorage.setItem("mintedPics", JSON.stringify(updatedAvailablePics));
+
+        toast.success("NFTs Purchased and Creators Paid Successfully");
+      } catch (err) {
+        console.error(" handlePay Error:", err);
+        toast.error(" Transaction Failed");
+      }
+    };
+
+
 
   return (
     <div className="relative">

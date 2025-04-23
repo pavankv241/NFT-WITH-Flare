@@ -1,9 +1,9 @@
-//import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 //import { priceService } from "../utils/fetchPrices";
 
 export default function PictureGallery({ pictures, addToCart }) {
-
-  /*const [trxPrice, setTrxPrice] = useState(null);
+/*
+  const [trxPrice, setTrxPrice] = useState(null);
 
   useEffect(() => {
 
